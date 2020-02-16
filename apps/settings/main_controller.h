@@ -45,17 +45,6 @@ public:
   void willDisplayCellForIndex(HighlightCell * cell, int index) override;
   void viewWillAppear() override;
 private:
-  constexpr static int k_indexOfMathOptionsChildren = 0;
-  constexpr static int k_indexOfBrightnessCell = k_indexOfMathOptionsChildren + 1;
-  constexpr static int k_indexOfLanguageCell = k_indexOfBrightnessCell + 1;
-  constexpr static int k_indexOfExamModeCell = k_indexOfLanguageCell + 1;
-  constexpr static int k_indexOfFontCell = k_indexOfExamModeCell + 1;
-  /* Pop-up cell and About cell are located at the same index because pop-up
-   * cell is optional. We must always correct k_indexOfAboutCell with
-   * hasPrompt() (TODO: make hasPrompt() constexpr and correct
-   * k_indexOfAboutCell) */
-  constexpr static int k_indexOfPopUpCell = k_indexOfFontCell + 1;
-  constexpr static int k_indexOfAboutCell = k_indexOfFontCell + 1;
   static const SettingsMessageTree * model();
 private:
   StackViewController * stackController() const;

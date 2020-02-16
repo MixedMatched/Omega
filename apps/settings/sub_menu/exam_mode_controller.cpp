@@ -16,18 +16,28 @@ namespace Settings {
 ExamModeController::ExamModeController(Responder * parentResponder) :
   GenericSubController(parentResponder),
   m_contentView(&m_selectableTableView),
+  m_ledController(this),
+  m_ledColorCell(KDFont::LargeFont, KDFont::SmallFont),
   m_cell{}
 {
   for (int i = 0; i < k_maxNumberOfCells; i++) {
-    m_cell[i].setMessage(ExamModeConfiguration::examModeActivationMessage(i));
+    m_cell[i].setMessage(ExamModeConfiguration::s_modelExamChildren[i].label());
     m_cell[i].setMessageFont(KDFont::LargeFont);
   }
 }
 
 bool ExamModeController::handleEvent(Ion::Events::Event event) {
   if (event == Ion::Events::OK || event == Ion::Events::EXE) {
-    AppsContainer::sharedAppsContainer()->displayExamModePopUp(examMode());
-    return true;
+    if(m_messageTreeModel->children(selectedRow())->label() == I18n::Message::LEDColor) {
+      (&m_ledController)->setMessageTreeModel(m_messageTreeModel->children(selectedRow()));
+      StackViewController * stack = stackController();
+      stack->push(&m_ledController);
+      return true;
+    }
+    else {
+      AppsContainer::sharedAppsContainer()->displayExamModePopUp(examMode());
+      return true;
+    }
   }
   return GenericSubController::handleEvent(event);
 }
@@ -56,13 +66,15 @@ int ExamModeController::numberOfRows() const {
 
 HighlightCell * ExamModeController::reusableCell(int index, int type) {
   assert(type == 0);
-  assert(index >= 0  && index < 3);
+  assert(index >= 0  && index < 2);
+  if (m_messageTreeModel->children(index)->label() == I18n::Message::LEDColor) {
+    return &m_ledColorCell;
+  }
   return &m_cell[index];
 }
 
 int ExamModeController::reusableCellCount(int type) {
-  assert(type == 0);
-  return 3;
+  return type == 0 ? 1 : 0;
 }
 
 void ExamModeController::willDisplayCellForIndex(HighlightCell * cell, int index) {
@@ -82,11 +94,10 @@ void ExamModeController::willDisplayCellForIndex(HighlightCell * cell, int index
     I18n::Message message = (I18n::Message) m_messageTreeModel->children(index)->children((int)preferences->colorOfLED())->label();
     myTextCell->setSubtitle(message);
   }
-  if (thisLabel == I18n::Message::ExamModeMode) {
-    MessageTableCellWithChevronAndMessage * myTextCell = (MessageTableCellWithChevronAndMessage *)cell;
-    I18n::Message message = (I18n::Message) m_messageTreeModel->children(index)->children((uint8_t)GlobalPreferences::sharedGlobalPreferences()->tempExamMode() - 1)->label();
-    myTextCell->setSubtitle(message);
-  }
+}
+
+int ExamModeController::typeAtLocation(int i, int j) {
+  return j == 0 ? 1 : 0;
 }
 
 int ExamModeController::initialSelectedRow() const {
